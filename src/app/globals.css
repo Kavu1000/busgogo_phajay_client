@@ -24,3 +24,10 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Print: show only the e-ticket card */
+@media print {
+  body > * { display: none !important; }
+  #ticket-card { display: block !important; position: fixed; top: 0; left: 0; width: 100%; }
+}
+
