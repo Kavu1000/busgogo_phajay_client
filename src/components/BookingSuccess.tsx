@@ -64,6 +64,8 @@ function BookingSuccessInner() {
   const router = useRouter();
   const params = useSearchParams();
   const bookingId = params.get('bookingId') || '';
+  // Phajay sends the orderNo back inside the `linkCode` parameter or `orderNo` parameter
+  const orderNo = params.get('orderNo') || params.get('linkCode') || '';
   const status = params.get('status') || '';
 
   // Query-param fallbacks (passed from BookingSummary)
@@ -80,15 +82,30 @@ function BookingSuccessInner() {
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : '';
-    if (!bookingId || !token) { setLoading(false); return; }
-    fetch(`${API}/bookings/${bookingId}`, { headers: { Authorization: `Bearer ${token}` } })
+
+    if ((!bookingId && !orderNo) || !token) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchUrl = bookingId
+      ? `${API}/bookings/${bookingId}`
+      : `${API}/bookings/order/${orderNo}`;
+
+    fetch(fetchUrl, { headers: { Authorization: `Bearer ${token}` } })
       .then(r => r.json())
-      .then(j => { if (j.data) setBooking(j.data); })
+      .then(j => {
+        // Handle both single object and array responses
+        const data = Array.isArray(j.data) && j.data.length > 0 ? j.data[0] : (j.data || null);
+        if (data) setBooking(data);
+      })
       .catch(() => { })
       .finally(() => setLoading(false));
-  }, [bookingId]);
+  }, [bookingId, orderNo]);
 
-  const bookingRef = bookingId ? `BUS-${bookingId.slice(-8).toUpperCase()}` : '—';
+  // Use the actual backend loaded ID for the QR & Ref if available
+  const actualBookingId = booking?._id || bookingId;
+  const bookingRef = actualBookingId ? `BUS-${actualBookingId.slice(-8).toUpperCase()}` : (orderNo ? `ORD-${orderNo.replace('BOOKING_', '').slice(-8)}` : '—');
 
   // Derive display values — prefer real backend data, fall back to URL params
   const route = booking ? `${booking.departureStation || ''} → ${booking.arrivalStation || ''}` : routeStr;
@@ -105,7 +122,8 @@ function BookingSuccessInner() {
     ? new Date(booking.departureTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
     : '—');
 
-  const isPaid = status === 'paid' || booking?.paymentStatus === 'completed';
+  // If we fetched the booking, use its status
+  const isPaid = booking?.paymentStatus === 'completed' || status === 'paid';
 
   if (loading) {
     return (
@@ -201,10 +219,10 @@ function BookingSuccessInner() {
 
           {/* QR Code */}
           <div className="flex justify-end">
-            {bookingId ? (
+            {actualBookingId ? (
               <QRCodeRenderer value={JSON.stringify({
                 ref: bookingRef,
-                id: bookingId,
+                id: actualBookingId,
                 name: booking?.userId?.username || 'Guest',
                 email: booking?.userId?.email || '',
                 route: route,
