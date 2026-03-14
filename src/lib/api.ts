@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://bus-api.nkaujntseeg.com/';
+const API_URL = 'https://bus-api.nkaujntseeg.com';
 
 const api = axios.create({
     baseURL: API_URL,
