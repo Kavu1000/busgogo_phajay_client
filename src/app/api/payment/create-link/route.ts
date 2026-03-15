@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
             orderId,
             description: description || `Bus ticket - Booking #${orderId}`,
             redirectUrl: finalRedirectUrl,
-            webhookUrl: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/payments/webhook`,
+            webhookUrl: `${process.env.NEXT_PUBLIC_API_URL || 'https://bus-api.nkaujntseeg.com/api'}/payments/webhook`,
         };
 
         const phajayRes = await fetch(LAPNET_API_URL, {
@@ -44,8 +44,9 @@ export async function POST(req: NextRequest) {
         const paymentUrl = data.paymentUrl || data.payment_url || data.link || data.url || data.data?.paymentUrl;
 
         return NextResponse.json({ paymentUrl, raw: data });
-    } catch (err: any) {
+    } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Internal error';
         console.error('Payment link creation failed:', err);
-        return NextResponse.json({ error: err.message || 'Internal error' }, { status: 500 });
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

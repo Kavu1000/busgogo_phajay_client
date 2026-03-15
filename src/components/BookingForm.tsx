@@ -114,8 +114,9 @@ export default function BookingForm({ scheduleId }: BookingFormProps) {
       });
 
       router.push(`/payment?${params.toString()}`);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || 'Booking failed. Please try again.');
+    } catch (err: unknown) {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      setError(axiosErr?.response?.data?.message || 'Booking failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

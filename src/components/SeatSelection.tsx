@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useBooking } from '@/contexts/BookingContext';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+import { API_URL } from '@/lib/api';
+const API = API_URL;
 
 // Generate seat IDs for a given capacity
 // Layout: 2-2 for capacity > 24, 2-1 for capacity <= 24
@@ -81,8 +82,8 @@ export default function SeatSelection({ scheduleId }: SeatSelectionProps) {
       const occRes = await fetch(`${API}/bookings/seats/${scheduleId}`);
       const occJson = await occRes.json();
       if (occRes.ok) setOccupiedSeats(occJson.data || []);
-    } catch (e: any) {
-      setError(e.message || 'Failed to load seat data');
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Failed to load seat data');
     } finally {
       setLoading(false);
     }

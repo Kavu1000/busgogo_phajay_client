@@ -53,7 +53,6 @@ export default function LoginForm() {
     try {
       await login(formData.email, formData.password);
       router.push('/');
-      router.refresh();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       const message = err?.response?.data?.message || 'Login failed. Please check your credentials.';

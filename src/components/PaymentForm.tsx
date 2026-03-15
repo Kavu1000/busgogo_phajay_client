@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ShieldCheckIcon } from '@heroicons/react/24/outline';
 import api from '@/lib/api';
@@ -41,8 +41,9 @@ function PaymentFormInner() {
       } else {
         throw new Error('No payment URL returned from gateway');
       }
-    } catch (e: any) {
-      const msg = e.response?.data?.message || e.message || 'Payment failed. Please try again.';
+    } catch (e: unknown) {
+      const axiosErr = e as { response?: { data?: { message?: string } }; message?: string };
+      const msg = axiosErr.response?.data?.message || axiosErr.message || 'Payment failed. Please try again.';
       setError(msg);
       setLoading(false);
     }

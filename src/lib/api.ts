@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'https://bus-api.nkaujntseeg.com/api';
+export const API_URL = 'https://bus-api.nkaujntseeg.com/api';
 
 const api = axios.create({
     baseURL: API_URL,
@@ -20,11 +20,14 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
-// On 401, clear token and  redirect to login
+// On 401, clear token and redirect to login
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401 && typeof window !== 'undefined') {
+        const isLoginRequest = error.config?.url?.endsWith('/auth/login');
+        const isLoginPage = typeof window !== 'undefined' && window.location.pathname === '/login';
+
+        if (error.response?.status === 401 && typeof window !== 'undefined' && !isLoginRequest && !isLoginPage) {
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             window.location.href = '/login';

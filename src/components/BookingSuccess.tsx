@@ -7,7 +7,8 @@ import {
   PrinterIcon, HomeIcon, DocumentTextIcon,
 } from '@heroicons/react/24/outline';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+import { API_URL } from '@/lib/api';
+const API = API_URL;
 
 interface BookingData {
   _id: string;
